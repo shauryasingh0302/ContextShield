@@ -238,7 +238,11 @@ export default function Home() {
       setResult(data);
     } catch (err: unknown) {
       if (err instanceof Error) {
-        setError(err.message);
+        if (err.message.includes("Failed to fetch") || err.name === "TypeError") {
+          setError(`Unable to connect to the ContextShield backend (${apiUrl}). If the free-tier server was sleeping, it may take 20-30 seconds to wake up. Please click Analyze again.`);
+        } else {
+          setError(err.message);
+        }
       } else {
         setError("An unexpected error occurred while connecting to the server.");
       }

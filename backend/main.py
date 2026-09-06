@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import uuid
@@ -162,49 +163,72 @@ async def analyze_post(
             detail=f"Failed to save uploaded image: {str(e)}",
         )
 
-    # 4. Extract text from the saved image using PaddleOCR
-    ocr_text = extract_text_from_image(save_path)
+    # Execute the multimodal ML pipeline in a worker thread so the main asyncio event loop
+    # remains responsive to health checks and concurrent pings
+    def _compute_multimodal_analysis():
+        # 4. Extract text from the saved image using PaddleOCR
+        extracted_ocr = extract_text_from_image(save_path)
 
-    # 5. Multilingual text analysis via XLM-RoBERTa
-    caption_emb = generate_embedding(caption)
-    ocr_emb = generate_embedding(ocr_text)
-    text_analysis = {
-        "caption_embedding_size": int(caption_emb.shape[0]),
-        "ocr_embedding_size": int(ocr_emb.shape[0]),
-    }
+        # 5. Multilingual text analysis via XLM-RoBERTa
+        caption_embedding = generate_embedding(caption)
+        ocr_embedding = generate_embedding(extracted_ocr)
+        t_analysis = {
+            "caption_embedding_size": int(caption_embedding.shape[0]),
+            "ocr_embedding_size": int(ocr_embedding.shape[0]),
+        }
 
-    # 6. Image feature extraction via CLIP
-    image_emb = generate_image_embedding(save_path)
-    image_analysis = {
-        "embedding_size": int(image_emb.shape[0]),
-    }
+        # 6. Image feature extraction via CLIP
+        img_embedding = generate_image_embedding(save_path)
+        img_analysis = {
+            "embedding_size": int(img_embedding.shape[0]),
+        }
 
-    # 7. Multimodal feature fusion
-    multimodal_analysis = fuse_multimodal_features(
-        caption_emb=caption_emb,
-        ocr_emb=ocr_emb,
-        image_emb=image_emb,
-    )
+        # 7. Multimodal feature fusion
+        mm_analysis = fuse_multimodal_features(
+            caption_emb=caption_embedding,
+            ocr_emb=ocr_embedding,
+            image_emb=img_embedding,
+        )
 
-    # 8. Trained Multimodal Risk Classification
-    risk_prediction = predict_multimodal_risk(
-        caption_emb=caption_emb,
-        ocr_emb=ocr_emb,
-        image_emb=image_emb,
-    )
+        # 8. Trained Multimodal Risk Classification
+        r_prediction = predict_multimodal_risk(
+            caption_emb=caption_embedding,
+            ocr_emb=ocr_embedding,
+            image_emb=img_embedding,
+        )
 
-    # 9. Deterministic explanation and suggestion generation
-    explanation = generate_explanation(
-        risk_label=risk_prediction["risk_label"],
-        confidence=risk_prediction["confidence"],
-        caption=caption,
-        ocr_text=ocr_text,
-    )
-    suggestion = generate_suggestion(
-        risk_label=risk_prediction["risk_label"],
-        caption=caption,
-        ocr_text=ocr_text,
-    )
+        # 9. Deterministic explanation and suggestion generation
+        expl = generate_explanation(
+            risk_label=r_prediction["risk_label"],
+            confidence=r_prediction["confidence"],
+            caption=caption,
+            ocr_text=extracted_ocr,
+        )
+        sugg = generate_suggestion(
+            risk_label=r_prediction["risk_label"],
+            caption=caption,
+            ocr_text=extracted_ocr,
+        )
+
+        return (
+            extracted_ocr,
+            t_analysis,
+            img_analysis,
+            mm_analysis,
+            r_prediction,
+            expl,
+            sugg,
+        )
+
+    (
+        ocr_text,
+        text_analysis,
+        image_analysis,
+        multimodal_analysis,
+        risk_prediction,
+        explanation,
+        suggestion,
+    ) = await asyncio.to_thread(_compute_multimodal_analysis)
 
     return {
         "risk_label": risk_prediction["risk_label"],

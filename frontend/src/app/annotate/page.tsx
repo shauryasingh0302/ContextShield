@@ -48,10 +48,11 @@ export default function AnnotatePage() {
   const [recentSamples, setRecentSamples] = useState<AnnotationSample[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   const fetchAnnotations = async () => {
     try {
-      const res = await fetch("http://localhost:8000/annotations");
+      const res = await fetch(`${apiUrl}/annotations`);
       if (res.ok) {
         const data = await res.json();
         setTotalCount(data.total || 0);
@@ -129,7 +130,7 @@ export default function AnnotatePage() {
       formData.append("severity", severity.toString());
       formData.append("language", language);
 
-      const res = await fetch("http://localhost:8000/annotate", {
+      const res = await fetch(`${apiUrl}/annotate`, {
         method: "POST",
         body: formData,
       });

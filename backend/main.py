@@ -17,10 +17,15 @@ app = FastAPI(
     version="0.1.0",
 )
 
-# Enable CORS so the Next.js frontend (running on http://localhost:3000) can communicate with this API
+# Enable CORS so frontend (localhost or Render) can communicate with this API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://contextshield-frontend.onrender.com",
+    ],
+    allow_origin_regex=r"https?://.*\.onrender\.com",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -45,6 +50,23 @@ VALID_ANNOTATION_LANGUAGES = {"ENGLISH", "HINDI", "HINGLISH", "OTHER"}
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB in bytes
+
+
+@app.get("/")
+@app.head("/")
+def root():
+    """Root endpoint returning API status and links."""
+    return {
+        "status": "ok",
+        "service": "contextshield-backend",
+        "message": "ContextShield API is active and ready.",
+        "endpoints": {
+            "health": "/health",
+            "cron_health": "/cron/health",
+            "docs": "/docs",
+            "analyze": "/analyze"
+        }
+    }
 
 
 @app.get("/health")

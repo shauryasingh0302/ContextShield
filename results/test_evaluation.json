@@ -1,0 +1,66 @@
+{
+  "total_samples": 398,
+  "accuracy": 0.8191,
+  "macro_precision": 0.7856,
+  "macro_recall": 0.7786,
+  "macro_f1": 0.7646,
+  "per_class": {
+    "SAFE": {
+      "precision": 0.7778,
+      "recall": 0.4615,
+      "f1": 0.5793,
+      "support": 91
+    },
+    "OFFENSIVE": {
+      "precision": 0.4444,
+      "recall": 0.7018,
+      "f1": 0.5442,
+      "support": 57
+    },
+    "HATE": {
+      "precision": 1.0,
+      "recall": 0.9847,
+      "f1": 0.9923,
+      "support": 131
+    },
+    "HARASSMENT": {
+      "precision": 0.92,
+      "recall": 0.9664,
+      "f1": 0.9426,
+      "support": 119
+    }
+  },
+  "confusion_matrix": [
+    [
+      42,
+      44,
+      0,
+      5
+    ],
+    [
+      12,
+      40,
+      0,
+      5
+    ],
+    [
+      0,
+      2,
+      129,
+      0
+    ],
+    [
+      0,
+      4,
+      0,
+      115
+    ]
+  ],
+  "labels": [
+    "SAFE",
+    "OFFENSIVE",
+    "HATE",
+    "HARASSMENT"
+  ],
+  "loss": 0.349
+}

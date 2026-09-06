@@ -1,2 +1,8 @@
 fastapi>=0.110.0
 uvicorn>=0.28.0
+python-multipart>=0.0.9
+paddlepaddle==3.2.2
+paddleocr>=2.7.0
+Pillow>=10.0.0
+torch>=2.0.0
+transformers>=4.30.0

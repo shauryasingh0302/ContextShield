@@ -23,6 +23,16 @@ venv/
 ENV/
 env/
 .venv/
+uploads/
+backend/uploads/
+
+# Intermediate smoke test checkpoint
+checkpoints/smoke_test_model.pt
+
+# Bulk external raw datasets (Multi3Hate parquet, raw images)
+dataset/external/multi3hate/*.parquet
+dataset/external/multioff/Labelled Images/
+dataset/external/harmeme/images/
 
 # Node / Next.js
 node_modules/

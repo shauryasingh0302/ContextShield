@@ -48,9 +48,29 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB in bytes
 
 
 @app.get("/health")
+@app.head("/health")
 def health_check():
     """Basic health check endpoint returning system status."""
-    return {"status": "ok"}
+    return {"status": "ok", "service": "contextshield-backend"}
+
+
+@app.get("/cron/health")
+@app.head("/cron/health")
+@app.get("/health/cron")
+def cron_health_check():
+    """
+    Lightweight keep-alive and health check endpoint tailored for scheduled cron jobs,
+    uptime monitors, and periodic pings to keep the free-tier service awake.
+    """
+    from datetime import datetime, timezone
+    return {
+        "status": "ok",
+        "alive": True,
+        "service": "contextshield-backend",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "message": "ContextShield backend is active and ready."
+    }
+
 
 
 @app.post("/analyze")

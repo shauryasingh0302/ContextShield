@@ -1,0 +1,15 @@
+name: ContextShield Keep-Alive Cron
+
+on:
+  schedule:
+    # Runs every 14 minutes to prevent Render free-tier spin-down (15-min timeout)
+    - cron: '*/14 * * * *'
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping ContextShield Health Route
+        run: |
+          curl -fsS -m 20 "https://contextshield-backend.onrender.com/cron/health" || echo "Ping completed"
